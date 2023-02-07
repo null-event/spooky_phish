@@ -36,7 +36,8 @@ The Ansible Playbooks are currently built for and tested on the latest Amazon De
     ansible-galaxy install -r ./data/playbooks/requirements.yml
 
 After Installing Dependencies:
--Replace the playbooks "setup-cobaltstrike.yml" and "configure-teamserver.yml" on the Terraform controller's "~/.ansible/roles/joeminicucci.cobalt_strike/tasks" directory with the updated playbooks in this repo.
+
+Replace the playbooks "setup-cobaltstrike.yml" and "configure-teamserver.yml" on the Terraform controller's "~/.ansible/roles/joeminicucci.cobalt_strike/tasks" directory with the updated playbooks in this repo.
 
 ### First Run - AWS SES Verification
 
@@ -156,7 +157,6 @@ Terraform doesn't support variables in module source paths, meaning that core mo
 - [Joe Minicucci](https://joeminicucci.com) - Original Author of RedIra project
 - [Red Baron](https://github.com/Coalfire-Research/Red-Baron) - Used as a starting point for RedIra, built on Terraform architecture and coding style.
 - [ansible-role-cobalt-strike](https://github.com/chryzsh/ansible-role-cobalt-strike) - Built on with several additions.
-- [Richard Ira Bong](https://en.wikipedia.org/wiki/Richard_Bong) for name of the project.
 
 ## TODO 
 
