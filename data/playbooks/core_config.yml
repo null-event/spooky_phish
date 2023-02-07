@@ -1,0 +1,50 @@
+- name: Core Configuration
+  hosts: all
+  tasks:
+
+    - name: Install core deps
+      apt:
+        name:
+          - curl
+          - tmux
+          - git
+          - dirmngr
+          - debconf-utils
+          - wget
+          - build-essential
+          - vim
+          - gcc
+        update_cache: yes
+        state: latest
+      become: yes
+      tags: update
+
+    - name: Update apt-get
+      shell: |
+        apt-get update
+      become: yes
+
+    - name: Download python3
+      shell: |
+        sudo apt-get -y install python3
+      become: yes
+
+    - name: Download disutils
+      shell: |
+        sudo apt-get -y install python3-distutils
+      become: yes
+
+    - name: Download pip
+      shell: |
+        curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+
+    - name: Install pip
+      shell: |
+        python3 /tmp/get-pip.py
+      become: yes
+
+    - name: Upgrade pip
+      shell: |
+        python3 -m pip install --upgrade pip
+      become: yes
+
