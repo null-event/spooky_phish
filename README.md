@@ -94,6 +94,12 @@ Record this SG as the `base-internal-security-groups`.
 
     "base-internal-security_groups" : ["sg-12345678912345678"],
 
+Additional lab deployment steps:
+1) Create a NAT gateway
+2) Modify SG rules
+3) ... 
+4) AWS Client VPN Endpoint
+
 ## Deployment
 ### Prepare the environment for Terraform - please see Paul Finger for credentials if needed
 ```shell script
