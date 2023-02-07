@@ -35,8 +35,8 @@ The Ansible Playbooks are currently built for and tested on the latest Amazon De
     apt-get -y install ansible terraform python3-pip
     ansible-galaxy install -r ./data/playbooks/requirements.yml
 
-### After Installing Dependencies
-    Replace the playbooks "setup-cobaltstrike.yml" and "configure-teamserver.yml" on the Terraform controller's "~/.ansible/roles/joeminicucci.cobalt_strike/tasks" directory with the updated playbooks in this repo.
+After Installing Dependencies:
+Replace the playbooks "setup-cobaltstrike.yml" and "configure-teamserver.yml" on the Terraform controller's "~/.ansible/roles/joeminicucci.cobalt_strike/tasks" directory with the updated playbooks in this repo.
 
 ### First Run - AWS SES Verification
 
