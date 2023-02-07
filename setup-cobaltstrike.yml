@@ -193,6 +193,12 @@
     executable: /usr/bin/expect
   register: expect
 
--name: Install pwndrop
-tasks:
-  shell: curl https://raw.githubusercontent.com/kgretzky/pwndrop/master/install_linux.sh | sudo bash
+- name: Install pwndrop
+  tasks:
+    shell: curl https://raw.githubusercontent.com/kgretzky/pwndrop/master/install_linux.sh | sudo bash
+  become: yes
+  
+- name: Install Villain
+  tasks:
+    shell: cd ~ && git clone https://github.com/t3l3machus/Villain && cd ./Villain && pip3 install -r requirements.txt
+  become: yes
