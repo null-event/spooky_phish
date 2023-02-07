@@ -1,0 +1,198 @@
+---
+# General installation
+- name: Write license key to file
+  copy:
+    content: "{{ license_key }}"
+    dest: "{{ ansible_env.HOME }}/.cobaltstrike.license"
+
+#workaround for openjdk incompatibility issues
+- name: Prepare Oracle JDK Environment
+  file:
+    path: /opt/jdk8
+    state: directory
+  become: yes
+
+- name: Prepare Oracle JDK2 Environment
+  file:
+    path: /opt/jdk17
+    state: directory
+  become: yes
+
+#- name: Write Oracle JDK to disk
+#    copy:
+#      content: "{{ playbook_dir }}/oracle/{{ oracle_jdk }}"
+#      dest: /opt/jdk/
+#
+#- name: Unpack Oracle JDK
+#  unarchive:
+#    src: "/opt/jdk/{{ oracle_jdk }}"
+#    dest: /opt/jdk/
+#    remote_src: yes
+
+- name: Unpack Oracle JDK
+  unarchive:
+    src: "{{ oracle_directory }}/{{ oracle_jdk }}"
+    dest: /opt/jdk8
+    remote_src: no
+    extra_opts: [--strip-components=1]
+#    creates: /opt/jdk8
+  become: yes
+
+- name: Unpack Oracle JDK 11 for keystore issues...
+  unarchive:
+    src: "{{ oracle_directory }}/{{oracle_jdk2 }}"
+    dest: /opt/jdk17
+    remote_src: no
+    extra_opts: [--strip-components=1]
+#    creates: /opt/jdk17
+  become: yes
+
+- name: Update alternatives JDK link created
+  community.general.alternatives:
+    name: java
+    link: /usr/bin/java
+    path: /opt/jdk8/bin/java
+    priority: 100
+  become: yes
+
+- name: Update global PATH
+  blockinfile:
+    path: /etc/environment
+    block: |
+      JAVA_HOME=/opt/jdk8
+      JRE_HOME=/opt/jdk8/jre
+      export PATH="{{ lookup('env','PATH') }}:{{ lookup('env','JAVA_HOME') }}/bin"
+  become: yes
+
+- name: Update bashrc for JDK
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    block: |
+      JAVA_HOME=/opt/jdk8
+      JRE_HOME=/opt/jdk8/jre
+      export PATH="{{ lookup('env','PATH') }}:$JAVA_HOME/bin"
+
+- name: Update root bashrc for JDK
+  blockinfile:
+    path: "/root/.bashrc"
+    block: |
+      JAVA_HOME=/opt/jdk8
+      JRE_HOME=/opt/jdk8/jre
+      export PATH="{{ lookup('env','PATH') }}:$JAVA_HOME/bin"
+  become: yes
+
+- name: Update sudoers secure_path for JDK
+  lineinfile:
+    path: "/etc/sudoers"
+    regexp: '^(Defaults\t* *secure_path)(.*=*)(?P<secpath>\".*)(.*\".*)$'
+    line: \g<1>\g<2>\g<secpath>:/opt/jdk8/bin\g<4>
+    backrefs: yes
+  become: yes
+
+
+# Default mystery meat openjdk11 is not working in debian - contacted Mudge and he recommends:
+#jdk.java.net or https://adoptopenjdk.net/
+#https://www.cobaltstrike.com/help-java-dependency
+#- name: Add core dep repos
+#  apt_repository:
+#    repo: 'deb http://deb.debian.org/debian stretch-backports main'
+#    update_cache: no
+#  become: yes
+
+- name: Install core deps
+  apt:
+    name:
+#      - openjdk-11-jdk
+      - curl
+      - tmux
+      - libssl-dev
+      - python3-pip
+    update_cache: yes
+    state: latest
+  become: yes
+  tags: update
+
+- name: Install pyOpenSSL to solve openssl errors in key generation
+  pip:
+    name: pyOpenSSL
+    executable: pip3
+
+#- name: Set default Java version
+#  command: update-java-alternatives -s java-1.11.0-openjdk-amd64
+#  become: yes
+
+#pulled from https://github.com/cisagov/ansible-role-cobalt-strike/blob/develop/tasks/main.yml - old download functionality is broken
+
+- name: Get download token from Cobalt Strike website
+  shell: |
+    curl https://download.cobaltstrike.com/download --data "dlkey={{ license_key }}" --output /tmp/token.html
+  become: no
+  delegate_to: localhost
+  tags:
+   - skip_ansible_lint
+
+- name: Extract the download token and download the Cobalt Strike tarball
+  ansible.builtin.get_url:
+    url: "https://download.cobaltstrike.com/downloads/{{ lookup('file', '/tmp/token.html') | regex_search('href=\"/downloads/(.+)/cobaltstrike-dist.zip\"', '\\1') | first }}/cobaltstrike-dist.tgz"
+    dest: /tmp
+
+- name: Extract the Cobalt Strike tarball
+  unarchive:
+    src: /tmp/cobaltstrike-dist.tgz
+    dest: "{{ ansible_env.HOME }}"
+    remote_src: yes
+  become: no
+
+#The following code hangs on awaiting license key for cs update...
+#- name: Update Cobalt Strike from the CS directory
+#  shell: ./update
+#  args:
+#    chdir: "{{ ansible_env.HOME }}/cobaltstrike"
+#  tags: update_cs
+  # tag to update
+#  become: no
+#
+- name: Install expect
+  ansible.builtin.package:
+    name:
+      - expect
+  become: yes
+
+- name: Upgrade and license Cobalt Strike
+  ansible.builtin.shell: |
+    log_file "expect.txt"
+    # Increase timeout from 10 to 600 seconds else this will hang forever
+    set timeout 300
+    spawn ./update
+
+    expect {
+      -re "Please enter your license key:" {
+        send [format "%s\n" {{ license_key }}]
+      } default {
+        exit 1
+      }
+    }
+
+    # Bail out if we encounter these error conditions
+    expect {
+      -re "(Failed to download hashes|Your license key is invalid)" {
+        exit 1
+      }
+    }
+
+    expect {
+      -re "Done" {
+        exit 0
+      } default {
+        exit 1
+      }
+    }
+  args:
+    chdir: /home/admin/cobaltstrike #un-hardcode this later w/ ansible.env
+    creates: /home/admin/cobaltstrike/cobaltstrike.auth
+    executable: /usr/bin/expect
+  register: expect
+
+-name: Install pwndrop
+tasks:
+  shell: curl https://raw.githubusercontent.com/kgretzky/pwndrop/master/install_linux.sh | sudo bash
