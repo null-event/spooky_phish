@@ -154,7 +154,7 @@ If the locals are changed, the paths in the destroy provisioners will need to be
 Terraform doesn't support variables in module source paths, meaning that core modules must remain in place, and deployments must be copied to the root folder or else the module sources will not resolve properly. If Hashicorp implements it in the future, dynamic path resolution could be accomplished by modifying base variables.
 
 ## Credit
-- Paul Finger - Project bug fixes and improvements, pwndrop implementation
+- [Paul Finger](https://github.com/t00r0) - Project bug fixes and improvements, pwndrop implementation
 - [Joe Minicucci](https://joeminicucci.com) - Original Author of RedIra project
 - [Red Baron](https://github.com/Coalfire-Research/Red-Baron) - Used as a starting point for RedIra, built on Terraform architecture and coding style.
 - [ansible-role-cobalt-strike](https://github.com/chryzsh/ansible-role-cobalt-strike) - Built on with several additions.
