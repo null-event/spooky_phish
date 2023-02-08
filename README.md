@@ -109,7 +109,7 @@ export AWS_SECRET_ACCESS_KEY="<secret_key>"
 export AWS_DEFAULT_REGION="us-east-1"
 export AWS_ACCESS_KEY_ID="<key_id>"
 ```
-### Deployment Prep (steps 1-5 are likely already done, so double check before removing any Terraform state files on the Controller)
+### Deployment Prep (steps 1-4 are likely already done, so double check before removing any Terraform state files on the Controller)
 1. Reference the [AWS Deployment README](./deployments/aws/README.md) to select the desired deployment.
  
 2. Clean the root of the previous deployment.
@@ -128,7 +128,7 @@ export AWS_ACCESS_KEY_ID="<key_id>"
     mv ./aws_complete.auto.tfvars.json.template ./aws_complete.auto.tfvars.json
     ```
 
-5. If working with Cobalt Strike, retrieve an Oracle JDK gz tar from the Oracle website and copy it to the [./data/oracle](./data/oracle) folder. This is necessary due to Oracle's licensing restrictions.
+5. If working with Cobalt Strike, retrieve an Oracle JDK gz tar from the Oracle website and copy it to the [./data/oracle](./data/oracle) folder. This is necessary due to Oracle's licensing restrictions. NOTE - you will also need to copy over jdk-17_linux-x64_bin.tar.gz to the directory, in addition to jdk-8u261-linux-x64.tar.gz
 
     ```cp jdk-8u261-linux-x64.tar.gz ./data/oracle/```
 
