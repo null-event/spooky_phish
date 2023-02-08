@@ -18,7 +18,7 @@ This is built on Red Ira, a cloud automation system scheme for Red Teams by [Joe
     - Refactored CS download
     - Fixed JDK dependency and Keystore Javastore issues
     - Altered instance deployments to work better with Cobalt Strike system requirements
--Pwndrop implementation for facilitating payload hosting on C2 server
+- Pwndrop implementation for facilitating payload hosting on C2 server
 
 ## Versioning
 This following components were leveraged for development and are stable for this release:
