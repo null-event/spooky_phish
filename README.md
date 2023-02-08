@@ -1,4 +1,4 @@
-# spooky_phish
+# spooky_phish 👻
 MAST OffSecOps Phishing Infrastructure
 
 This is built on Red Ira, a cloud automation system scheme for Red Teams by [Joe Minicucci](https://joeminicucci.com). That framework was built on the original work done in [Red Baron](https://github.com/Coalfire-Research/Red-Baron). It currently supports AWS only. The accompanying blog post can be [found here](https://blog.joeminicucci.com/2021/redira).
@@ -13,11 +13,12 @@ This is built on Red Ira, a cloud automation system scheme for Red Teams by [Joe
         - Obscures the underlying operations infrasturcture to curious Blue teams.
 
 ## Improvements to RedIra
-- ACME provider upgrade to version .XXXX
+- ACME provider upgrade
 - Fixed several bugs in the code and introduced updates in Cobalt Strike Ansible playbooks
     - Refactored CS download
-    - Fixed JDK dependency issue that was preventing Keystore Java import
-    - Altered instance deployment to work better with CS
+    - Fixed JDK dependency and Keystore Javastore issues
+    - Altered instance deployments to work better with Cobalt Strike system requirements
+-Pwndrop implementation for facilitating payload hosting on C2 server
 
 ## Versioning
 This following components were leveraged for development and are stable for this release:
@@ -95,20 +96,20 @@ Record this SG as the `base-internal-security-groups`.
 
     "base-internal-security_groups" : ["sg-12345678912345678"],
 
-Additional lab deployment steps:
-1) Create a NAT gateway
-2) Modify SG rules
-3) ... 
-4) AWS Client VPN Endpoint
+### Additional lab deployment steps:
+1) Create a NAT gateway with public connectivity and an EIN. Place it in the public subnet created above. 
+2) Add a route table associated with the private subnet with 0.0.0.0/0 as destination and the NAT created above as the target.
+3) Create an AWS Client VPN Endpoint utilizing mutual authentication following the steps listed [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/cvpn-getting-started.html). This allows operators to connect to the backend Gophish and C2 instances. Associate this VPN endpoint with the default VPC SG.
+4) Modify the SG of the private subnet to allow inbound traffic from the SG of the default VPC (in order to make the client VPN work) and to allow inbound SSH traffic in order to allow the Terraform controller the ability to perform remote-execs. 
 
 ## Deployment
-### Prepare the environment for Terraform - please see Paul Finger for credentials if needed
+### Prepare the environment for Terraform - please see your technical lead for credentials if needed
 ```shell script
 export AWS_SECRET_ACCESS_KEY="<secret_key>"
 export AWS_DEFAULT_REGION="us-east-1"
 export AWS_ACCESS_KEY_ID="<key_id>"
 ```
-### Deployment Prep
+### Deployment Prep (steps 1-5 are likely already done, so double check before removing any Terraform state files on the Controller)
 1. Reference the [AWS Deployment README](./deployments/aws/README.md) to select the desired deployment.
  
 2. Clean the root of the previous deployment.
@@ -153,7 +154,7 @@ If the locals are changed, the paths in the destroy provisioners will need to be
 Terraform doesn't support variables in module source paths, meaning that core modules must remain in place, and deployments must be copied to the root folder or else the module sources will not resolve properly. If Hashicorp implements it in the future, dynamic path resolution could be accomplished by modifying base variables.
 
 ## Credit
-- Paul Finger - Project bug fixes and improvements 
+- Paul Finger - Project bug fixes and improvements, pwndrop implementation
 - [Joe Minicucci](https://joeminicucci.com) - Original Author of RedIra project
 - [Red Baron](https://github.com/Coalfire-Research/Red-Baron) - Used as a starting point for RedIra, built on Terraform architecture and coding style.
 - [ansible-role-cobalt-strike](https://github.com/chryzsh/ansible-role-cobalt-strike) - Built on with several additions.
@@ -162,7 +163,6 @@ Terraform doesn't support variables in module source paths, meaning that core mo
 
 ### Future Needs and Ideas
 #### Needs
-- Pwndrop for payload server
 - SSO for VPN login
 - RedELK Implementation
 - Hosted Zone / Create VPC implementation
